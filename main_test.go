@@ -36,7 +36,7 @@ func TestColorToByte(t *testing.T) {
 	}{
 		{0.0, 0},
 		{1.0, 255},
-		{0.5, 127},
+		{0.5, 181},
 	}
 
 	for _, tt := range tests {

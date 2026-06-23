@@ -43,18 +43,25 @@ func Cross(a, b Vec3) Vec3 {
     }
 }
 
-// colorToByte converts a colour component from [0,1] to a byte [0,255].
+func linearToGamma(c float64) float64 {
+    if c > 0 {
+        return math.Sqrt(c)
+    }
+    return 0
+}
+
 func colorToByte(c float64) int {
-    return int(255.999 * c)
+    intensity := Interval{0.0, 0.999}
+    return int(256 * intensity.Clamp(linearToGamma(c)))
 }
 
 // WriteColor outputs a single pixel's colour in PPM byte format.
 func (c Color) WriteColor(w io.Writer) {
-    intensity := Interval{0.000, 0.999}
-    ir := int(256 * intensity.Clamp(c.X))
-    ig := int(256 * intensity.Clamp(c.Y))
-    ib := int(256 * intensity.Clamp(c.Z))
-    fmt.Fprintf(w, "%d %d %d\n", ir, ig, ib)
+    fmt.Fprintf(w, "%d %d %d\n",
+        colorToByte(c.X),
+        colorToByte(c.Y),
+        colorToByte(c.Z),
+    )
 }
 
 func (v Vec3) Unit() Vec3 { return v.Div(v.Length()) }
@@ -80,4 +87,33 @@ func RandomUnitVector() Vec3 {
         }
         return p.Unit()
     }
+}
+
+func RandomInUnitSphere() Vec3 {
+    for {
+        p := RandomVec3Range(-1, 1)
+        if p.LengthSquared() >= 1 {
+            continue
+        }
+        return p
+    }
+}
+
+func RandomInUnitDisk() Vec3 {
+    for {
+        p := Vec3{rand.Float64()*2 - 1, rand.Float64()*2 - 1, 0}
+        if p.LengthSquared() >= 1 {
+            continue
+        }
+        return p
+    }
+}
+
+func Reflect(v, n Vec3) Vec3 {
+    return v.Sub(n.Scale(2 * Dot(v, n)))
+}
+
+func (v Vec3) NearZero() bool {
+    const s = 1e-8
+    return math.Abs(v.X) < s && math.Abs(v.Y) < s && math.Abs(v.Z) < s
 }
