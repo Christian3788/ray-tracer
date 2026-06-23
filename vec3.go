@@ -42,11 +42,16 @@ func Cross(a, b Vec3) Vec3 {
     }
 }
 
+// colorToByte converts a colour component from [0,1] to a byte [0,255].
+func colorToByte(c float64) int {
+    return int(255.999 * c)
+}
+
 // WriteColor outputs a single pixel's colour in PPM byte format.
 func (c Color) WriteColor(w io.Writer) {
-    ir := int(255.999 * c.X)
-    ig := int(255.999 * c.Y)
-    ib := int(255.999 * c.Z)
+    ir := colorToByte(c.X)
+    ig := colorToByte(c.Y)
+    ib := colorToByte(c.Z)
     fmt.Fprintf(w, "%d %d %d\n", ir, ig, ib)
 }
 
