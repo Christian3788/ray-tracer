@@ -4,6 +4,7 @@ import (
     "fmt"
     "io"
     "math"
+    "math/rand"
 )
 
 // Vec3 is a 3D vector. We use it for points, directions, AND colours.
@@ -49,10 +50,34 @@ func colorToByte(c float64) int {
 
 // WriteColor outputs a single pixel's colour in PPM byte format.
 func (c Color) WriteColor(w io.Writer) {
-    ir := colorToByte(c.X)
-    ig := colorToByte(c.Y)
-    ib := colorToByte(c.Z)
+    intensity := Interval{0.000, 0.999}
+    ir := int(256 * intensity.Clamp(c.X))
+    ig := int(256 * intensity.Clamp(c.Y))
+    ib := int(256 * intensity.Clamp(c.Z))
     fmt.Fprintf(w, "%d %d %d\n", ir, ig, ib)
 }
 
 func (v Vec3) Unit() Vec3 { return v.Div(v.Length()) }
+
+func RandomVec3() Vec3 {
+    return Vec3{rand.Float64(), rand.Float64(), rand.Float64()}
+}
+
+func RandomVec3Range(min, max float64) Vec3 {
+    return Vec3{
+        min + (max-min)*rand.Float64(),
+        min + (max-min)*rand.Float64(),
+        min + (max-min)*rand.Float64(),
+    }
+}
+
+func RandomUnitVector() Vec3 {
+    for {
+        p := RandomVec3Range(-1, 1)
+        lensq := p.LengthSquared()
+        if lensq < 1e-8 || lensq > 1 {
+            continue
+        }
+        return p.Unit()
+    }
+}
